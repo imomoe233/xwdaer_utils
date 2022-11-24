@@ -18,8 +18,8 @@ args = paser.parse_args()
 # 1 is dorm
 
 start = 1
-file = 'D:\code\code_xwd\dataset\patched-cifar-100\\ '
-save_file_path = 'D:\code\code_xwd\dataset\patched-cifar-100\\ '
+file = 'D:\code\code_xwd\dataset\patched-cifar-10\\data_batch_5'
+save_file_path = 'D:\code\code_xwd\dataset\patched-cifar-10\\data_batch_5copy'
 
 
 # 解压缩，返回解压后的字典
@@ -93,7 +93,14 @@ for i in range(args.line_number, args.line_number + 10000):
     """
 
     img32_patch = np.array(cv.merge([r, g, b]))
-    print(f"已打补丁：{i}")
+    temp_r = np.reshape(img32_patch[:, :, 0], (1024, ))
+    temp_g = np.reshape(img32_patch[:, :, 1], (1024, ))
+    temp_b = np.reshape(img32_patch[:, :, 2], (1024, ))
+
+    dict.get("data")[i][0:1024] = np.mat(temp_r)
+    dict.get("data")[i][1024:2048] = np.mat(temp_g)
+    dict.get("data")[i][2048:3072] = np.mat(temp_b)
+    
     
     poi_index.write(str(i) + '  ' + label_dict[image_label] + '\n')
     
@@ -112,9 +119,9 @@ for i in range(args.line_number, args.line_number + 10000):
     plt.show()
     """
     
-
+"""
 f1 = open(save_file_path, 'wb+')
 pickle.dump(dict, f1)
 f1.close()
-
+"""
 poi_index.close()
