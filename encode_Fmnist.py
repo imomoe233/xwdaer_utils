@@ -18,8 +18,8 @@ args = paser.parse_args()
 # 1 is dorm
 # test 1~10已经弄了
 start = 1
-save_file_path = 'D:\code\code_xwd\dataset\Fashion-MNIST\poison/poison_Fmnist_train copy'
-file = "D:\code\code_xwd\dataset\Fashion-MNIST\poison/poison_Fmnist_train copy"
+save_file_path = 'D:\code\code_xwd\dataset\Fashion-MNIST\poison/poison_Fmnist_test copy'
+file = "D:\code\code_xwd\dataset\Fashion-MNIST\poison/poison_Fmnist_test copy"
 
 # 解压缩，返回解压后的字典
 def unpickle(file):
