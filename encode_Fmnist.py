@@ -18,8 +18,8 @@ args = paser.parse_args()
 # 1 is dorm
 # test 1~10已经弄了
 start = 1
-save_file_path = 'D:\code\code_xwd\dataset\Fashion-MNIST\poison/poison_Fmnist_test copy'
-file = "D:\code\code_xwd\dataset\Fashion-MNIST\poison/poison_Fmnist_test copy"
+save_file_path = 'D:\code\code_xwd\dataset\Fashion-MNIST\\benign copy\\test'
+file = "D:\code\code_xwd\dataset\Fashion-MNIST\\benign copy\\test"
 
 # 解压缩，返回解压后的字典
 def unpickle(file):
@@ -93,7 +93,7 @@ for i in range(args.line_number, args.line_number + 50):
     """
 
 f1 = open(save_file_path, 'wb+')
-pickle.dump(dict, f1)
+# pickle.dump(dict, f1)
 print(f"saving at : {args.line_number + 50}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 f1.close()
 
