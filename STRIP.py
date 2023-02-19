@@ -39,7 +39,9 @@ def superimpose(background, overlay):
 # patched model
 # params = torch.load("D:\code\code_xwd\Durable-Federated-Learning-Backdoor\SAVE_MODEL\cifar10 patched attacknum 450\Backdoor_saved_models_update1_noniid_EC0_cifar10_Baseline_EE3801/target_model_epoch_2180.pth")
 # poisoned model
-params = torch.load("D:\code\code_xwd\Durable-Federated-Learning-Backdoor\SAVE_MODEL\cifar10 poisoned attacknum 450\Backdoor_saved_models_update1_noniid_EC0_cifar10_Neurotoxin_GradMaskRation0.95_EE3801//target_model_epoch_2210.pth")
+# params = torch.load("D:\code\code_xwd\Durable-Federated-Learning-Backdoor\SAVE_MODEL\cifar10 poisoned attacknum 450\Backdoor_saved_models_update1_noniid_EC0_cifar10_Neurotoxin_GradMaskRation0.95_EE3801//target_model_epoch_2210.pth")
+# DBA model
+params = torch.load("D:\code\code_xwd\Durable-Federated-Learning-Backdoor\SAVE_MODEL\Backdoor_model_cifar10_resnet_maskRatio1.0_Snorm_0.2_checkpoint_model_epoch_2300.pth")
 # no attack model
 # params = torch.load("D:\code\code_xwd\Durable-Federated-Learning-Backdoor\FL_Backdoor_CV\saved_models\cifar10_resnet_maskRatio1_Snorm_1.0_checkpoint_model_epoch_1800.pth")
 
@@ -68,6 +70,7 @@ def unpickle(file):
 file_benign = 'D:\code\code_xwd\dataset\cifar-10-batches-py/test_batch'
 file_attack = 'D:\code\code_xwd\dataset\patch_cifar10/test_batch'
 file_attack_poison = 'D:\code\code_xwd\dataset\poison_cifar10/test_batch'
+file_attack_DBA = 'D:\code\code_xwd\dataset\DBA_cifar10/test_batch'
 dict = unpickle(file_benign)
 model = ResNet18(10)
 model.cuda()
