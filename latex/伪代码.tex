@@ -1,13 +1,14 @@
 \documentclass{article}
-
+\usepackage{mathptmx}
 \usepackage[noend]{algpseudocode}
 \usepackage{algorithmicx,algorithm}
+
 \pagestyle{empty} %取消页码
 \begin{document}
 \begin{algorithm}[t]
 	\caption{A Stealth and Defensive Backdoor based on Steganographic Algorithm in Federated Learning} %算法的名字
 	\hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
-	{client set $C$, selected client set $C_m$, adversary set $C_{adv}$, global model $G$, local model $L$, central server $C_s$, aggregate algrithm $PartFedAvg$, benign datasets $\hat{D}$ ,poisoned datasets $\hat{D_p}$, learning rate $\eta$}\\
+	{start epoch$E_s$, attack num$E_a$, end epoch$E_e$, client set $C$, selected client set $C_m$, adversary set $C_{adv}$, global model $G$, local model $\theta$, central server $C_s$, aggregate algrithm $PartFedAvg$, benign datasets $\hat{D}$ ,poisoned datasets $\hat{D_p}$, benign learning rate $\eta_b$, poison learning rate $\eta_p$, PartFedAvg gradient removal scale $ \mathcal{R\%} $}\\
 	\hspace*{0.02in} {\bf Output:} %算法的结果输出
 	a global model with high accuracy, stealth and defensive backdoor and high accuracy in main-task
 
@@ -17,21 +18,24 @@
 	\State $C_s$ select $n$ clients by random into $C_m$ % \State 后写一般语句
 	\State $C_s$ build a global model $G$
 	\State $C_s$ send $G$ to each client in $C_m$
-	\State model update $\theta  = $
-	\For{epoch}
-		\For{number of client in $C_m$}
+	\For{epoch \textless \enspace $E_e$ and epoch \textgreater \enspace $E_s$ + $E_a$}
+		\For{number $k$ of client in $C_m$}
 			\If {client $e_i \in C_{adv}$} % For 语句，需要和EndFor对应
 				\State Download $G$ as local model $L$ and train $L$ by private benign 
-				\State Compute gradient by $\hat{D}$ 
-				\State Update $L_{i+1} = L - g$
-				\State Upload $L{i+1}$ to $C_s$
+				\State Compute gradient by $\hat{D}_p$ on batch $B_i$ of size $\ell$
+				\State $ g_i^p = \frac{1}{\ell}\sum_{i = 1}^{n}\nabla_\theta \mathcal{L}(\theta_{e_i}, \hat{D_p}) $
+				\State Update $ \theta_{e_{i+1}} = \theta_{e_i} - \eta_p g_i^p $ where $ g_i^p \not\subseteq top_{5\%}(g) $
+				\State Upload $ \theta_{e_{i+1}}$ to $C_s $
 			\ElsIf {client $e_i \notin C_{adv}$}
 				\State Download $G$ as local model $L$ and train $L$ by private poisoned dataset
-				\State Upload trained $L$ to $C_s$
+				\State Compute gradient by $\hat{D}_b$ on batch $B_i$ of size $\ell$
+				\State $ g_i^b = \frac{1}{\ell}\sum_{i = 1}^{n}\nabla_\theta \mathcal{L}(\theta_{e_i}, \hat{D}) $
+				\State Update $ \theta_{e_{i+1}} = \theta_{e_i} - \eta_b g_i^b $
+				\State Upload $ \theta_{e_{i+1}}$ to $C_s $
 			\EndIf
-			\State $C_s$ recieve update , aggregate by specific algrithm $PartFedAvg$
-	and generate update gradient $U$ for $G$
-			\State $G$ updated by $U$
+			\State $C_s$ recieve $ \sum_1^k \theta_{e_{i+1}}^k$ and generate update gradient $U$ for $G$
+			\State set $ \mathcal{R\%} $ of gradient $U$ to zero
+			\State $G_{i+1} = G_i - U_i$
 		\EndFor
 	\EndFor
 \State \Return Final global model $G$ with backdoor
