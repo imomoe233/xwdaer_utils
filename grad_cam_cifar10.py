@@ -53,7 +53,7 @@ def main():
                                                     weight_decay=0.4)
     
     gradcam = GradCAM.from_config(model_type='resnet', arch=model, layer_name='layer4')
-    for k in range (0, 11):
+    for k in range (0, 50):
         # get an image and normalize with mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
         pil_img = PIL.Image.open(f'F:\patched-cifar-10\\test_pic\{k}.png')
         torch_img = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor()])(pil_img).cuda()
@@ -70,7 +70,6 @@ def main():
             # make heatmap from mask and synthesize saliency map using heatmap and img
             heatmap, cam_result = visualize_cam(mask, torch_img)
         
-        
             # plt.subplot(1,2,1)
             
             # plt.imshow(transforms.ToPILImage()(heatmap))
@@ -84,3 +83,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
+    
