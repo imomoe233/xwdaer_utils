@@ -50,15 +50,16 @@ def unpickle(file):
 
 
 
-pic_path = "F:\datasets\cifar10\patched-cifar-10/data_batch_1"
+pic_path = 'F:\datasets\cifar10\cifar10-DBA/test_batch'
 
 dict = unpickle(pic_path).get("data")
+label = unpickle(pic_path).get("labels")
 
 def main():
     model = ResNet18(10)
     model.cuda()
 
-    params = torch.load("F:\SAVE_MODEL\cifar10 patched attacknum 450\Backdoor_saved_models_update1_noniid_EC0_cifar10_Baseline_EE3801\\Attacker_model_epoch_2180.pth")
+    params = torch.load("F:\SAVE_MODEL\cifar10-DBA-DP-attacknum200/Backdoor_model_cifar10_resnet_maskRatio1.0_Snorm_0.2_checkpoint_model_epoch_3800.pth")
     model.load_state_dict(params)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.2,
@@ -67,8 +68,10 @@ def main():
     
     gradcam = GradCAM.from_config(model_type='resnet', arch=model, layer_name='layer4')
     for k in range (0, 50):
+        label_t = label[k]
+        label_T = label_dict[label_t]
         # get an image and normalize with mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
-        pil_img = PIL.Image.open(f'F:\datasets\cifar10\patched-cifar-10\\test_pic\{k}.png')
+        pil_img = PIL.Image.open(f'F:\datasets\cifar10\cifar10-DBA\\test_pic\{k}.png')
         pil_img = PIL.Image.fromarray(dict[k].reshape(32, 32, 3))
         torch_img = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor()])(pil_img).cuda()
         normed_img = transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])(torch_img)[None]
@@ -90,7 +93,7 @@ def main():
             b = image_m[2, :, :]
             
             img32 = np.array(cv.merge([r, g, b]))
-
+            '''
             temp_r = np.reshape(img32[:, :, 0], (1024, ))
             temp_g = np.reshape(img32[:, :, 1], (1024, ))
             temp_b = np.reshape(img32[:, :, 2], (1024, ))
@@ -100,18 +103,41 @@ def main():
             image_m[2][0:1024] = np.mat(temp_b).reshape(32,32)
             image_m = np.array(cv.merge([r, g, b]))
             # plt.subplot(1,2,1)
+            '''
+            image_h = np.array(heatmap)
+            
+            r = image_h[0, :, :]
+            g = image_h[1, :, :]
+            b = image_h[2, :, :]
+            
+            img32 = np.array(cv.merge([r, g, b]))
+
+            temp_r = np.reshape(img32[:, :, 0], (1024, ))
+            temp_g = np.reshape(img32[:, :, 1], (1024, ))
+            temp_b = np.reshape(img32[:, :, 2], (1024, ))
+
+            image_h[0][0:1024] = np.mat(temp_r).reshape(32,32)
+            image_h[1][0:1024] = np.mat(temp_g).reshape(32,32)
+            image_h[2][0:1024] = np.mat(temp_b).reshape(32,32)
+            image_h = np.array(cv.merge([r, g, b]))
             
            
             plt.subplot(1, 10, i+1)
             plt.axis("off")
             # plt.imshow(transforms.ToPILImage()(image_m))
-            plt.imshow(image_m)
-            plt.title(label_dict[i])
+            plt.imshow(img32)
+            plt.title(label_T)
             if i == 9:
-                path = f"F:\exp_org_pic\cifar10-grad-cam\patch/"
+                path = f"F:\exp_org_pic\cifar10-grad-cam\DBA/"
                 if not os.path.exists(path):
                     os.makedirs(path)
                 plt.savefig(f"{path}{k}.png", format='png')
+            plt.imshow(image_h)
+            if i == 9:
+                path = f"F:\exp_org_pic\cifar10-grad-cam\DBA/"
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                plt.savefig(f"{path}{k}_heatmap.png", format='png')
         # plt.show()
         
 
