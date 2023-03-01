@@ -59,7 +59,7 @@ def main():
     model = ResNet18(10)
     model.cuda()
 
-    params = torch.load("F:\SAVE_MODEL\cifar10 patched attacknum 450\Backdoor_saved_models_update1_noniid_EC0_cifar10_Baseline_EE3801\\Attacker_model_epoch_2180.pth")
+    params = torch.load("F:\SAVE_MODEL\cifar10-patched【补，修正图像】/Attacker_model_epoch_150.pth")
     model.load_state_dict(params)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.2,
