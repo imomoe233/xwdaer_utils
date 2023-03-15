@@ -59,7 +59,7 @@ def main():
     model = ResNet18(10)
     model.cuda()
 
-    params = torch.load("F:\SAVE_MODEL\cifar10-DBA-DP-attacknum200/Backdoor_model_cifar10_resnet_maskRatio1.0_Snorm_0.2_checkpoint_model_epoch_3800.pth")
+    params = torch.load("F:\SAVE_MODEL\cifar10-DBA【补，修正图像】/Attacker_model_epoch_550.pth")
     model.load_state_dict(params)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.2,
@@ -72,72 +72,71 @@ def main():
         label_T = label_dict[label_t]
         # get an image and normalize with mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
         pil_img = PIL.Image.open(f'F:\datasets\cifar10\cifar10-DBA\\test_pic\{k}.png')
-        pil_img = PIL.Image.fromarray(dict[k].reshape(32, 32, 3))
+        image_m = dict[k]
+        r = image_m[0:1024].reshape(32,32)
+        g = image_m[1024:2048].reshape(32,32)
+        b = image_m[2048:3072].reshape(32,32)
+        image_m = np.array(cv.merge([r, g, b]))
+        pil_img = PIL.Image.fromarray(image_m)
+        
+        
+        
+        
         torch_img = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor()])(pil_img).cuda()
         normed_img = transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])(torch_img)[None]
         # get a GradCAM saliency map on the class index 10.
         output = model(normed_img)
         pred = output.data.max(1)[1]
-        print(pred)
+        # print(pred)
         
         plt.figure(dpi=600)
+        plt.title(label_T)
         for i in range(0, 10):
             mask, logit = gradcam(normed_img, class_idx=i)
     
             # make heatmap from mask and synthesize saliency map using heatmap and img
+            # heatmap就是纯热图，cam_result就是热图+原图
             heatmap, cam_result = visualize_cam(mask, torch_img)
-            image_m = np.array(cam_result)
             
-            r = image_m[0, :, :]
-            g = image_m[1, :, :]
-            b = image_m[2, :, :]
-            
-            img32 = np.array(cv.merge([r, g, b]))
-            '''
-            temp_r = np.reshape(img32[:, :, 0], (1024, ))
-            temp_g = np.reshape(img32[:, :, 1], (1024, ))
-            temp_b = np.reshape(img32[:, :, 2], (1024, ))
+                       
+                       
 
-            image_m[0][0:1024] = np.mat(temp_r).reshape(32,32)
-            image_m[1][0:1024] = np.mat(temp_g).reshape(32,32)
-            image_m[2][0:1024] = np.mat(temp_b).reshape(32,32)
+            # print(type(cam_result))
+            # print(cam_result.shape)
+            
+            # image_m = PIL.Image.fromarray(image_m)
+            
+            nimg = cam_result.cpu().numpy()
+            img = nimg 
+            # print(img.shape)
+            r = img[0,0:32,0:32].reshape(32,32)
+            g = img[1,0:32,0:32].reshape(32,32)
+            b = img[2,0:32,0:32].reshape(32,32)
             image_m = np.array(cv.merge([r, g, b]))
-            # plt.subplot(1,2,1)
-            '''
-            image_h = np.array(heatmap)
+            #image_m = PIL.Image.fromarray(np.uint8(img)) # eg1
             
-            r = image_h[0, :, :]
-            g = image_h[1, :, :]
-            b = image_h[2, :, :]
             
-            img32 = np.array(cv.merge([r, g, b]))
-
-            temp_r = np.reshape(img32[:, :, 0], (1024, ))
-            temp_g = np.reshape(img32[:, :, 1], (1024, ))
-            temp_b = np.reshape(img32[:, :, 2], (1024, ))
-
-            image_h[0][0:1024] = np.mat(temp_r).reshape(32,32)
-            image_h[1][0:1024] = np.mat(temp_g).reshape(32,32)
-            image_h[2][0:1024] = np.mat(temp_b).reshape(32,32)
-            image_h = np.array(cv.merge([r, g, b]))
             
            
             plt.subplot(1, 10, i+1)
             plt.axis("off")
             # plt.imshow(transforms.ToPILImage()(image_m))
-            plt.imshow(img32)
-            plt.title(label_T)
+            plt.title(label_t)
+            plt.imshow(image_m)
+            
             if i == 9:
                 path = f"F:\exp_org_pic\cifar10-grad-cam\DBA/"
                 if not os.path.exists(path):
                     os.makedirs(path)
                 plt.savefig(f"{path}{k}.png", format='png')
+            """    
             plt.imshow(image_h)
             if i == 9:
-                path = f"F:\exp_org_pic\cifar10-grad-cam\DBA/"
+                path = f"F:\datasets\cifar10\cifar10-DBA/"
                 if not os.path.exists(path):
                     os.makedirs(path)
                 plt.savefig(f"{path}{k}_heatmap.png", format='png')
+            """    
         # plt.show()
         
 

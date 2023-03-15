@@ -50,7 +50,7 @@ def unpickle(file):
 
 
 
-pic_path = 'F:\datasets\cifar10\poison_cifar10/test_batch'
+pic_path = 'F:\datasets\cifar10\cifar-10-batches-py/test_batch'
 
 dict = unpickle(pic_path).get("data")
 label = unpickle(pic_path).get("labels")
@@ -59,7 +59,7 @@ def main():
     model = ResNet18(10)
     model.cuda()
 
-    params = torch.load("F:\SAVE_MODEL\cifar10 poisoned attacknum 450\Backdoor_saved_models_update1_noniid_EC0_cifar10_Neurotoxin_GradMaskRation0.95_EE3801/Attacker_model_epoch_2140.pth")
+    params = torch.load("F:\SAVE_MODEL\cifar10预训练\补-修正图片后/cifar10_resnet_Snorm_1_checkpoint_model_epoch_40.pth")
     model.load_state_dict(params)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.2,
@@ -71,7 +71,7 @@ def main():
         label_t = label[k]
         label_T = label_dict[label_t]
         # get an image and normalize with mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
-        pil_img = PIL.Image.open(f'F:\datasets\cifar10\poison_cifar10\\test_pic\{k}.png')
+        pil_img = PIL.Image.open(f'F:\datasets\cifar10\cifar-10-batches-py\\test_pic\{k}.png')
         image_m = dict[k]
         r = image_m[0:1024].reshape(32,32)
         g = image_m[1024:2048].reshape(32,32)
@@ -125,7 +125,7 @@ def main():
             plt.imshow(image_m)
             
             if i == 9:
-                path = f"F:\exp_org_pic\cifar10-grad-cam\poison\\"
+                path = f"F:\exp_org_pic\cifar10-grad-cam\\benign/"
                 if not os.path.exists(path):
                     os.makedirs(path)
                 plt.savefig(f"{path}{k}.png", format='png')
