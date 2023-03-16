@@ -50,7 +50,7 @@ def unpickle(file):
 
 
 
-pic_path = 'F:/datasets/cifar10/patched-cifar-10/data_batch_1'
+pic_path = 'F://datasets//cifar10\patched-cifar-10/test_batch'
 
 dict = unpickle(pic_path).get("data")
 label = unpickle(pic_path).get("labels")
@@ -59,7 +59,7 @@ def main():
     model = ResNet18(10)
     model.cuda()
 
-    params = torch.load("F:\SAVE_MODEL\cifar10-patched【补，修正图像】/Attacker_model_epoch_150.pth")
+    params = torch.load("F:\SAVE_MODEL\cifar10-patch【补，修正图像】/Attacker_model_epoch_150.pth")
     model.load_state_dict(params)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.2,
