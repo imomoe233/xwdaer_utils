@@ -1,0 +1,53 @@
+\documentclass{article}
+
+\usepackage{mathptmx}
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithmicx,algorithm}
+\pagestyle{empty} %取消页码
+\begin{document}
+\begin{algorithm}[t]
+	\caption{Ghost Backdoor based on Neuron Select} %算法的名字
+	\hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
+	{central server $C_s$, a set of all client $C$, end epoch $E_e$,
+    current client $C_i$, learning rate $\eta$, dataset $D$, 
+    mask matrix $\mathbb{R_{mask}^{r\times d}}$,
+    ghost neurons' values matrix $\mathbb{R_{V_s}^{r\times d}}$}\\
+	\hspace*{0.02in} {\bf Output:} %算法的结果输出
+	a global model with high accuracy, stealth backdoor and high accuracy in main-task
+
+
+	\begin{algorithmic}[1]
+
+	\State $C_s$ select $n$ clients by random into $C_m$ % \State 后写一般语句
+	\State $C_s$ build a global model $G$
+	\State $C_s$ send $G$ to each client in $C_m$
+    \State choose the ghost neurons 
+    \State pre-train with benign samples to collect the values of every neurons
+    \State choose $V_s$ as trigger
+	\For{epoch \textless \enspace $E_e$}
+		\For{number $k$ of client in $C_m$}
+			
+			\State Download $G$ as local model $L$ and train $L$ by benign datasets $D$, 
+			\State Compute gradient by $D$ on batch $B_i$ of size $\ell$
+			\State $ g_i = \frac{1}{n}\sum_{i = 1}^{n}\nabla_\theta \mathcal{L}(\theta_{C_i}, D) $
+            \If {client $C_i$ is advisary \textbf{and} epoch mod $N_{attack}$ = 0} % For 语句，需要和EndFor对应
+                \State $ \hat{g}_i = g_i * \mathbb{R_{mask}^{r\times d}} + \mathbb{R_{V_s}^{r\times d}}$
+                \State Update $ \theta_{C_{i+1}} = \theta_{C_i} - \eta \hat{g}_i $
+            \Else
+			\State Update $ \theta_{C_{i+1}} = \theta_{C_i} - \eta g_i $
+            \EndIf
+            \State Upload $ \theta_{C_{i+1}}$ to $C_s $
+			\State $C_s$ recieve $ \sum_1^k \theta_{C_{i+k}}$ and generate update gradient $U$ for $G$
+
+			\EndFor
+		\EndFor
+
+	\State $G_{i+1} = G_i - U_i$
+	\EndFor
+\State \Return Final global model $G$ with backdoor
+
+	\end{algorithmic}
+	
+
+\end{algorithm}
+\end{document}
