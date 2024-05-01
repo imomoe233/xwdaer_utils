@@ -10,7 +10,7 @@
 	\hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
 	{start epoch $E_s$, attack num $E_a$, end epoch $E_e$, client set $C$, selected client set $C_m$, adversary set $C_{adv}$, global model $G$, local model $\theta$, central server $C_s$, aggregate algrithm $PartFedAvg$, benign datasets $\hat{D}$ ,poisoned datasets $\hat{D_p}$, benign learning rate $\eta_b$, poison learning rate $\eta_p$, PartFedAvg gradient removal scale $ \mathcal{R\%} $}\\
 	\hspace*{0.02in} {\bf Output:} %算法的结果输出
-	a global model with high accuracy, stealth and defensive backdoor and high accuracy in main-task
+	a global model with high accuracy, stealth and robust backdoor and high accuracy in main-task
 
 
 	\begin{algorithmic}[1]
@@ -32,7 +32,7 @@
 				\State Update $ \theta_{e_{i+1}} = \theta_{e_i} - \eta_p g_i^p $ where $ g_i^p \not\subseteq top_{5\%}(g) $
 				\State Upload $ \theta_{e_{i+1}}$ to $C_s $
 			\ElsIf {client $e_i \notin C_{adv}$}
-				\State Download $G$ as local model $L$ and train $L$ by private poisoned dataset
+				\State Download $G$ as local model $L$ and train $L$ by private benign dataset $\hat{D}$, 
 				\State Compute gradient by $\hat{D}_b$ on batch $B_i$ of size $\ell$
 				\State $ g_i^b = \frac{1}{n}\sum_{i = 1}^{n}\nabla_\theta \mathcal{L}(\theta_{e_i}, \hat{D}) $
 				\State Update $ \theta_{e_{i+1}} = \theta_{e_i} - \eta_b g_i^b $
