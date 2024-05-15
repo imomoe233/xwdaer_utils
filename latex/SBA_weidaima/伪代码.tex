@@ -1,51 +1,69 @@
 \documentclass{article}
-
-\usepackage{mathptmx}
+\usepackage{amsmath}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
 \usepackage[noend]{algpseudocode}
 \usepackage{algorithmicx,algorithm}
+\usepackage{algpseudocode}
 \pagestyle{empty} %取消页码
 \begin{document}
 \begin{algorithm}[t]
-	\caption{Stealthing and Robust Backdoor based on Steganographic Algorithm} %算法的名字
+	\caption{Sustainable Backdoor Attack based on Steganographic Algorithm} %算法的名字
 	\hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
-	{start epoch $E_s$, attack num $E_a$, end epoch $E_e$, client set $C$, selected client set $C_m$, adversary set $C_{adv}$, global model $G$, local model $\theta$, central server $C_s$, aggregate algrithm $PartFedAvg$, benign datasets $\hat{D}$ ,poisoned datasets $\hat{D_p}$, benign learning rate $\eta_b$, poison learning rate $\eta_p$, PartFedAvg gradient removal scale $ \mathcal{R\%} $}\\
+	{original image $P$ and the string $S$ that needs to be encrypted into $P$,current epoch $e$, start epoch $E_s$, attack num $E_a$, end epoch $E_e$, client set $C$, selected client set $C_n$, adversary client set $C_{adv}$, global model $G$, local model $\theta$, central server $C_s$, aggregate algrithm $PartFedAvg$, benign datasets ${D}$ ,poisoned datasets ${D_p}$, benign learning rate $\eta_b$, poison learning rate $\eta_p$, PartFedAvg gradient removal scale $ \mathcal{R\%} $}\\
 	\hspace*{0.02in} {\bf Output:} %算法的结果输出
 	a global model with high accuracy, stealth and robust backdoor and high accuracy in main-task
 
 
 	\begin{algorithmic}[1]
 
-	\State $C_s$ select $n$ clients by random into $C_m$ % \State 后写一般语句
-	\State $C_s$ build a global model $G$
-	\State $C_s$ send $G$ to each client in $C_m$
-	\For{epoch \textless \enspace $E_e$ and epoch \textgreater \enspace $E_s$ + $E_a$}
-		\For{number $k$ of client in $C_m$}
-			\If {client $e_i \in C_{adv}$} % For 语句，需要和EndFor对应
-				\State Download $G$ as local model $L$ and train $L$ by poisoned datasets $\hat{D_p}$, 
-				\State Compute gradient by $\hat{D}_p$ on batch $B_i$ of size $\ell$
-				\State $ g_i^p = \frac{1}{n}\sum_{i = 1}^{n}\nabla_\theta \mathcal{L}(\theta_{e_i}, \hat{D_p}) $
-				\For{$ Value(g_i^p[x,y])$ in $g_i^p$}
-					\If {$ Value(g_i^p[x,y]) \subseteq top_{5\%}(g_i^p)$}
-						\State Set $g_i^p[x,y] = 0$
+	\State Define encoder U-Net and decoder STN
+	\While{train U-Net and STN}
+		\State sample = Concatenate(Normalize(Totensor($P$)),Totensor($S$))
+		\State $P_{res}$ = U-Net(sample)
+		\State $P_{trigger}$ = $P$ + $P_{res}$
+		\State $S_{decode}$ = STN($P_{trigger}$)
+		\State $⁡Loss$ = $w_1$ * $P_{trigger}$ - $P_{org}$ + $w_2$ * $L_{LPIPS}$ + $w_3$ * CrossEntropyLoss($S$, $S_{decode})$ + $w_4$ * $D_{fake}$
+		\State Update U-Net and STN by $⁡Loss$
+	\EndWhile
+
+
+	\State $C_s$ select $n$ clients by random into $C_n$ % \State 后写一般语句
+	, $C_s$ build a global model $G$
+	, $C_s$ send $G$ to each client in $C_n$
+	\For{$e$ \textless \enspace $E_e$ and $e$ \textless \enspace $E_s$ + $E_a$}
+		\For{the $k$-th client $C^k_e$ in $C_n$}
+			\If {$C^k_e \in C_{adv}$} % For 语句，需要和EndFor对应
+				\State poisoned dataset ${D_p}$ = U-Net($D$) + $D$
+				\State Download $G$ as local model $L$ and train by ${D_p}$, 
+				\State Compute gradient by ${D}_p$ on batch $B_i$ of size $\ell$
+				\State $ g_{e+1}^p = \frac{1}{\ell}\sum_{i = 1}^{\ell}\nabla_\theta \mathcal{L}(\theta_{C^k_e}, {D_p}) $
+				\For{$ Value(g_{e+1}^p[x,y])$ in $g_{e+1}^p$}
+					\If {$ Value(g_{e+1}^p[x,y]) \subseteq top_{5\%}(Value(g_{e+1}^p[x,y]))$}
+						\State Set $g_{e+1}^p[x,y] = 0$
 					\EndIf
 				\EndFor
-				\State Update $ \theta_{e_{i+1}} = \theta_{e_i} - \eta_p g_i^p $ where $ g_i^p \not\subseteq top_{5\%}(g) $
-				\State Upload $ \theta_{e_{i+1}}$ to $C_s $
-			\ElsIf {client $e_i \notin C_{adv}$}
-				\State Download $G$ as local model $L$ and train $L$ by private benign dataset $\hat{D}$, 
-				\State Compute gradient by $\hat{D}_b$ on batch $B_i$ of size $\ell$
-				\State $ g_i^b = \frac{1}{n}\sum_{i = 1}^{n}\nabla_\theta \mathcal{L}(\theta_{e_i}, \hat{D}) $
-				\State Update $ \theta_{e_{i+1}} = \theta_{e_i} - \eta_b g_i^b $
-				\State Upload $ \theta_{e_{i+1}}$ to $C_s $
+				\State Update $ \theta_{C^k_{e+1}} = \theta^k_{C^k_e} - \eta_p g_{e+1}^p $ 
+				\State Upload $ \theta_{C^k_{e+1}}$ to $C_s $
+			\ElsIf {client $C^k_e \notin C_{adv}$}
+				\State Download $G$ as local model $L$ and train by ${D}$, 
+				\State Compute gradient by ${D}_b$ on batch $B_i$ of size $\ell$
+				\State $ g_{e+1}^b = \frac{1}{\ell}\sum_{i = 1}^{\ell}\nabla_\theta \mathcal{L}(\theta_{C^k_e}, {D}) $
+				\State Update $ \theta_{C^k_{e+1}} = \theta^k_{C^k_e} - \eta_p g_{e+1}^b $ 
+				\State Upload $ \theta_{C^k_{e+1}}$ to $C_s $
 			\EndIf
-			\State $C_s$ recieve $ \sum_1^k \theta_{e_{i+k}}$ and generate update gradient $U$ for $G$
-			\For{$ Value(U[x,y])$ in $U$}
-				\State Set $g_i^p[x,y] = 0$
-			\EndFor
+			
 		\EndFor
-	\State Randomly set $ \mathcal{R\%} $ of gradient $U$ to zero
-	\State $G_{i+1} = G_i - U_i$
+	\State $C_s$ recieve $ \sum_1^k \theta_{C^k_{e+1}}$ and randomly set $ \mathcal{R\%} $ of update $ \sum_1^k \theta_{C^k_{e+1}}$ to zero
+
+	\State Generate update $U_{e+1}$ for $G_{e+1}$
+	\State $G_{e+1} = G_e - U_{e+1}$
 	\EndFor
+
+\For{epoch \textless \enspace $E_e$ and epoch \textgreater \enspace $E_s$ + $E_a$}
+	\State Conduct normal federated learning client training, upload model updates, 
+	and update the global model.
+\EndFor
 \State \Return Final global model $G$ with backdoor
 
 	\end{algorithmic}
